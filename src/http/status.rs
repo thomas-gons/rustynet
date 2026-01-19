@@ -1,13 +1,13 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HttpStatus {
-    OK = 200,
+    Ok = 200,
 
-    BAD_REQUEST = 400,
-    NOT_FOUND = 404,
-    METHOD_NOT_ALLOWED = 405,
-    PAYLOAD_TOO_LARGE = 413,
-    URI_TOO_LONG = 414,
+    BadRequest = 400,
+    NotFound = 404,
+    MethodNotAllowed = 405,
+    PayloadTooLarge = 413,
+    UriTooLong = 414,
 
-    INTERNAL_SERVER_ERROR = 500,
-    HTTP_VERSION_NOT_SUPPORTED = 505,
+    InternalServerError = 500,
+    HttpVersionNotSupported = 505,
 }

@@ -1,7 +1,7 @@
-use crate::http::status::HttpStatus;
 use crate::http::headers::HttpHeaders;
+use crate::http::status::HttpStatus;
 
-
+#[allow(dead_code)]
 pub enum ResponseHeader {
     ContentLength,
     ContentType,
@@ -18,7 +18,7 @@ pub struct HttpResponse {
 impl HttpResponse {
     pub fn new() -> Self {
         Self {
-            status: HttpStatus::OK,
+            status: HttpStatus::Ok,
             headers: HttpHeaders::new(),
             body: Vec::new(),
         }
@@ -36,41 +36,42 @@ impl HttpResponse {
     }
 
     pub fn build_headers(&self) -> String {
-        if self.status != HttpStatus::OK {
+        if self.status != HttpStatus::Ok {
             let error = error_code_stringify(self.status);
 
             // HTTP <major>.<minor> <status> <reason>\r\n
             // \r\n
-            return format!("HTTP/1.1 {} {}\r\n \
+            return format!(
+                "HTTP/1.1 {} {}\r\n \
                             \r\n",
-                           self.status as usize, error
-            )
+                self.status as usize, error
+            );
         }
 
         // HTTP <major>.<minor> <status>\r\n
         // <header_name>: <header_value>\r\n
         // ...
         // \r\n
-        format!("HTTP/1.1 {} OK\r\n \
+        format!(
+            "HTTP/1.1 {} OK\r\n \
                  {}\
                  \r\n",
-                self.status as usize,
-                self.headers.stringify(),
+            self.status as usize,
+            self.headers.stringify(),
         )
     }
 }
 
-
 fn error_code_stringify(code: HttpStatus) -> &'static str {
     match code {
-        HttpStatus::BAD_REQUEST => "Bad Request",                               // 400
-        HttpStatus::NOT_FOUND => "Not Found",                                   // 404
-        HttpStatus::METHOD_NOT_ALLOWED => "Method Not Allowed",                 // 405
-        HttpStatus::PAYLOAD_TOO_LARGE => "Payload Too Large",                   // 413
-        HttpStatus::URI_TOO_LONG => "URI Too Long",                             // 414
+        HttpStatus::BadRequest => "Bad Request",              // 400
+        HttpStatus::NotFound => "Not Found",                  // 404
+        HttpStatus::MethodNotAllowed => "Method Not Allowed", // 405
+        HttpStatus::PayloadTooLarge => "Payload Too Large",   // 413
+        HttpStatus::UriTooLong => "URI Too Long",             // 414
 
-        HttpStatus::INTERNAL_SERVER_ERROR => "Internal Server Error",           // 500
-        HttpStatus::HTTP_VERSION_NOT_SUPPORTED => "HTTP Version Not Supported", // 505
-        HttpStatus::OK => "",
-    } 
+        HttpStatus::InternalServerError => "Internal Server Error", // 500
+        HttpStatus::HttpVersionNotSupported => "HTTP Version Not Supported", // 505
+        HttpStatus::Ok => "",
+    }
 }

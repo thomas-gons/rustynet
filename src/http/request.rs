@@ -1,31 +1,12 @@
+use crate::http::HttpMethod;
 use crate::http::headers::HttpHeaders;
 
-pub const REQUEST_LINE_MAX_LEN: usize = 2048;
-pub const HTTP_METHOD_MAX_LEN: usize = 16;
-pub const PATH_MAX_LEN: usize = 1024;
-pub const HEADERS_MAX_LEN: usize = 8192;
-pub const BODY_MAX_LEN: usize = 1024 * 1024; // 1MB
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum HttpMethod {
-    OPTIONS,
-    GET,
-    HEAD,
-    POST,
-    PUT,
-    DELETE,
-    TRACE,
-    CONNECT,
-    PATCH,
-    UNKNOWN
-}
-
 pub enum RequestHeader {
     Host,
     ContentLength,
     ContentType,
 }
-
 
 pub struct HttpRequest {
     pub method: HttpMethod,
@@ -37,11 +18,10 @@ pub struct HttpRequest {
     pub body: Vec<u8>,
 }
 
-
 impl HttpRequest {
     pub fn new() -> Self {
         Self {
-            method: HttpMethod::UNKNOWN,
+            method: HttpMethod::Unknown,
             path: String::new(),
             http_version: [0; 2],
             headers: HttpHeaders::new(),

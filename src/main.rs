@@ -1,11 +1,13 @@
-mod net;
+mod config;
+mod handler;
 mod http;
+mod net;
 
+use config::{ServerConfig, set_config};
 use net::server::Server;
-use net::config::ServerConfig;
 
 fn main() -> std::io::Result<()> {
-    let config = ServerConfig::default();
-    let server = Server::init(config)?;
+    set_config(ServerConfig::default());
+    let server = Server::init()?;
     server.run()
 }

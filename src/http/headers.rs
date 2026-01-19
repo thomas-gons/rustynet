@@ -1,13 +1,13 @@
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 pub struct HttpHeaders {
-    headers: HashMap<String, String>,
+    headers: IndexMap<String, String>,
 }
 
 impl HttpHeaders {
     pub fn new() -> Self {
         Self {
-            headers: HashMap::new(),
+            headers: IndexMap::new(),
         }
     }
 
