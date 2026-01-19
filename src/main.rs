@@ -3,9 +3,9 @@ mod handler;
 mod http;
 mod net;
 
+use async_std::task;
 use config::{ServerConfig, set_config};
 use net::server::Server;
-use async_std::task;
 
 fn main() -> std::io::Result<()> {
     // Initialize configuration

@@ -88,10 +88,10 @@ impl RequestParser {
         }
 
         let method = std::str::from_utf8(parts[0]).unwrap_or("").to_uppercase();
-        let method_enum = http_method_from_str(&method);
-        if method_enum == HttpMethod::Unknown {
-            return RequestParserOutcome::Error;
-        }
+        let method_enum = match http_method_from_str(&method) {
+            HttpMethod::Unknown => return RequestParserOutcome::Error,
+            m => m,
+        };
 
         let path = std::str::from_utf8(parts[1]).unwrap_or("");
         if path.len() > config().max_path_size {

@@ -31,8 +31,8 @@ impl Server {
         let mut req = HttpRequest::new();
         let mut buffer = vec![0; config().buffer_size];
 
-        let mut parser_res = RequestParserOutcome::Incomplete;
-        while parser_res != RequestParserOutcome::Done {
+        let mut parser_res ;
+        loop {
             let n = match stream.read(&mut buffer).await {
                 Ok(0) => return Err(ReadError::ConnectionClosed),
                 Ok(n) => n,
@@ -40,10 +40,11 @@ impl Server {
                 Err(e) => return Err(ReadError::Io(e)),
             };
 
-
             parser_res = parser.feed(&buffer[..n], &mut req);
             match parser_res {
-                RequestParserOutcome::Ok | RequestParserOutcome::Incomplete => continue,
+                RequestParserOutcome::Incomplete |
+                RequestParserOutcome::Ok => continue,
+                RequestParserOutcome::Done => break,
                 _ => return Err(ReadError::Parser(parser_res)),
             }
         }
@@ -68,7 +69,10 @@ impl Server {
         Self::write_response(&mut stream, &response).await
     }
 
-    async fn write_response(stream: &mut TcpStream, response: &HttpResponse) -> std::io::Result<()> {
+    async fn write_response(
+        stream: &mut TcpStream,
+        response: &HttpResponse,
+    ) -> std::io::Result<()> {
         let headers = response.build_headers();
         stream.write_all(headers.as_bytes()).await?;
         stream.write_all(&response.body).await?;
