@@ -5,9 +5,12 @@ mod net;
 
 use config::{ServerConfig, set_config};
 use net::server::Server;
+use async_std::task;
 
 fn main() -> std::io::Result<()> {
-    set_config(ServerConfig::default());
-    let server = Server::init()?;
-    server.run()
+    // Initialize configuration
+    let cfg = ServerConfig::default();
+    set_config(cfg);
+    let server = Server;
+    task::block_on(server.run())
 }

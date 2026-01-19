@@ -3,12 +3,11 @@ use crate::handler;
 use crate::http::parser::*;
 use crate::http::request::HttpRequest;
 use crate::http::response::HttpResponse;
-use std::io::{Read, Write};
-use std::net::{TcpListener, TcpStream};
+use async_std::net::{TcpListener, TcpStream};
+use async_std::prelude::*;
+use async_std::task;
 
-pub struct Server {
-    listener: TcpListener,
-}
+pub struct Server;
 
 enum ReadError {
     Io(std::io::Error),
@@ -17,56 +16,43 @@ enum ReadError {
 }
 
 impl Server {
-    pub fn init() -> std::io::Result<Self> {
-        let listener = TcpListener::bind((config().address, config().port))?;
-        Ok(Self { listener })
-    }
+    pub async fn run(&self) -> std::io::Result<()> {
+        let listener = TcpListener::bind((config().address, config().port)).await?;
 
-    pub fn run(&self) -> std::io::Result<()> {
-        for stream in self.listener.incoming() {
-            let mut stream = stream?;
-            self.handle_client(&mut stream)?;
+        while let Ok((stream, _addr)) = listener.accept().await {
+            task::spawn(Self::handle_client(stream));
         }
+
         Ok(())
     }
 
-    fn read_request(&self, stream: &mut TcpStream) -> Result<HttpRequest, ReadError> {
+    async fn read_request(stream: &mut TcpStream) -> Result<HttpRequest, ReadError> {
         let mut parser = RequestParser::new();
         let mut req = HttpRequest::new();
         let mut buffer = vec![0; config().buffer_size];
 
         let mut parser_res = RequestParserOutcome::Incomplete;
         while parser_res != RequestParserOutcome::Done {
-            let r = stream.read(&mut buffer);
-
-            let n = match r {
+            let n = match stream.read(&mut buffer).await {
+                Ok(0) => return Err(ReadError::ConnectionClosed),
                 Ok(n) => n,
                 Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
                 Err(e) => return Err(ReadError::Io(e)),
             };
 
-            // Connection closed
-            if n == 0 {
-                return Err(ReadError::ConnectionClosed);
-            }
 
             parser_res = parser.feed(&buffer[..n], &mut req);
             match parser_res {
-                RequestParserOutcome::Ok => continue,
-                RequestParserOutcome::Incomplete => continue,
-                _ => {
-                    if parser_res != RequestParserOutcome::Done {
-                        return Err(ReadError::Parser(parser_res));
-                    }
-                }
+                RequestParserOutcome::Ok | RequestParserOutcome::Incomplete => continue,
+                _ => return Err(ReadError::Parser(parser_res)),
             }
         }
 
         Ok(req)
     }
 
-    fn handle_client(&self, stream: &mut TcpStream) -> std::io::Result<()> {
-        let response = match self.read_request(stream) {
+    async fn handle_client(mut stream: TcpStream) -> std::io::Result<()> {
+        let response = match Self::read_request(&mut stream).await {
             Ok(r) => handler::handle_request(&r),
             Err(ReadError::Io(err)) => {
                 eprintln!("I/O error while reading request: {:?}", err);
@@ -79,17 +65,13 @@ impl Server {
             }
         };
 
-        self.write_response(stream, &response)
+        Self::write_response(&mut stream, &response).await
     }
 
-    fn write_response(
-        &self,
-        stream: &mut TcpStream,
-        response: &HttpResponse,
-    ) -> std::io::Result<()> {
+    async fn write_response(stream: &mut TcpStream, response: &HttpResponse) -> std::io::Result<()> {
         let headers = response.build_headers();
-        stream.write_all(headers.as_bytes())?;
-        stream.write_all(&response.body)?;
+        stream.write_all(headers.as_bytes()).await?;
+        stream.write_all(&response.body).await?;
         Ok(())
     }
 }
