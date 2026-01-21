@@ -3,6 +3,8 @@ use std::time::Duration;
 
 use std::sync::OnceLock;
 
+use crate::http::HttpVersion;
+
 static CONFIG: OnceLock<ServerConfig> = OnceLock::new();
 
 #[allow(dead_code)]
@@ -12,12 +14,15 @@ pub struct ServerConfig {
     pub port: u16,
     pub buffer_size: usize,
 
+    pub http_version: HttpVersion,
     pub max_path_size: usize,
     pub max_header_size: usize,
     pub max_body_size: usize,
 
     pub read_timeout: Duration,
     pub write_timeout: Duration,
+
+    pub static_files_root: &'static str,
 
     pub server_name: &'static str,
 }
@@ -29,12 +34,15 @@ impl Default for ServerConfig {
             port: 8080,
             buffer_size: 4096,
 
+            http_version: HttpVersion::V1_1,
             max_path_size: 1024,
             max_header_size: 8192,
             max_body_size: 1024 * 1024, // 1 MB
 
             read_timeout: Duration::from_secs(5),
             write_timeout: Duration::from_secs(5),
+
+            static_files_root: "./static",
 
             server_name: "RustyNet/0.1",
         }

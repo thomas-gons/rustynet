@@ -67,6 +67,7 @@ fn error_code_stringify(code: HttpStatus) -> &'static str {
         HttpStatus::BadRequest => "Bad Request",              // 400
         HttpStatus::NotFound => "Not Found",                  // 404
         HttpStatus::MethodNotAllowed => "Method Not Allowed", // 405
+        HttpStatus::LengthRequired => "Content-Length field required", // 411
         HttpStatus::PayloadTooLarge => "Payload Too Large",   // 413
         HttpStatus::UriTooLong => "URI Too Long",             // 414
 

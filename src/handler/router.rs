@@ -9,9 +9,7 @@ pub fn route(req: &HttpRequest) -> HttpResponse {
     match (&req.method, req.path.as_str()) {
         (HttpMethod::Get, "/") => responses::welcome(),
 
-        (HttpMethod::Get, path) if path.starts_with("/static/") => static_files::serve(&req.path),
-
-        (HttpMethod::Get, _) => responses::any_error(HttpStatus::NotFound),
+        (HttpMethod::Get, _) => static_files::serve(&req.path),
 
         _ => responses::any_error(HttpStatus::MethodNotAllowed),
     }

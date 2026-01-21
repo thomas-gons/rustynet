@@ -1,22 +1,22 @@
 use std::fs::File;
 use std::io::Read;
 
+use crate::config::config;
+use crate::handler::responses;
 use crate::http::response::{HttpResponse, ResponseHeader};
 use crate::http::status::HttpStatus;
-
-const PUBLIC_DIR: &str = "./public";
 
 pub fn serve(path: &str) -> HttpResponse {
     let mut response = HttpResponse::new();
 
     let safe_path = sanitize_path(path);
-    let full_path = format!("{}{}", PUBLIC_DIR, safe_path);
+    let full_path = format!("{}{}", config().static_files_root, safe_path);
+    eprintln!("Serving static file: {}", full_path);
 
     let mut file = match File::open(&full_path) {
         Ok(f) => f,
         Err(_) => {
-            response.status = HttpStatus::NotFound;
-            return response;
+            return responses::not_found();
         }
     };
 
@@ -34,7 +34,7 @@ pub fn serve(path: &str) -> HttpResponse {
 }
 
 fn sanitize_path(path: &str) -> &str {
-    path.strip_prefix("/static").unwrap_or("")
+    path // do nothing for now
 }
 
 fn guess_mime(path: &str) -> &str {

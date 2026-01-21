@@ -5,6 +5,7 @@ pub enum HttpStatus {
     BadRequest = 400,
     NotFound = 404,
     MethodNotAllowed = 405,
+    LengthRequired = 411,
     PayloadTooLarge = 413,
     UriTooLong = 414,
 
