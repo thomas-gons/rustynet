@@ -1,0 +1,22 @@
+# rustynet configuration file
+address = "127.0.0.1"
+port = 8080
+
+# Size of the read/write buffer (in bytes)
+buffer_size = 4096
+
+# Supported HTTP version: (V0_9, V1_0, V1_1, V2_0, V3_0) 
+http_version = "V1_1"
+
+# Request limits (in bytes)
+max_path_size = 1024
+max_header_size = 8192
+max_body_size = 1048576  # 1 MB
+
+# Server timeouts (in seconds)
+read_timeout = 5
+write_timeout = 5
+
+static_files_root = "./static"
+
+server_name = "rustynet/0.1"

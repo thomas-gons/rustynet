@@ -1,11 +1,15 @@
+use crate::config::config;
 use crate::http::headers::HttpHeaders;
 use crate::http::status::HttpStatus;
+use httpdate;
 
 #[allow(dead_code)]
 pub enum ResponseHeader {
     ContentLength,
     ContentType,
+    ContentEncoding,
     Connection,
+    Date,
     Server,
 }
 
@@ -17,18 +21,28 @@ pub struct HttpResponse {
 
 impl HttpResponse {
     pub fn new() -> Self {
-        Self {
+        let mut res = Self {
             status: HttpStatus::Ok,
             headers: HttpHeaders::new(),
             body: Vec::new(),
-        }
+        };
+
+        // Host system name
+        res.set_header(ResponseHeader::Server, &config().server_name);
+        res.set_header(
+            ResponseHeader::Date,
+            &httpdate::fmt_http_date(std::time::SystemTime::now()),
+        );
+        res
     }
 
     pub fn set_header(&mut self, h: ResponseHeader, value: &str) {
         let name = match h {
             ResponseHeader::ContentType => "Content-Type",
             ResponseHeader::ContentLength => "Content-Length",
+            ResponseHeader::ContentEncoding => "Content-Encoding",
             ResponseHeader::Connection => "Connection",
+            ResponseHeader::Date => "Date",
             ResponseHeader::Server => "Server",
         };
 
@@ -53,7 +67,7 @@ impl HttpResponse {
         // ...
         // \r\n
         format!(
-            "HTTP/1.1 {} OK\r\n \
+            "HTTP/1.1 {} OK\r\n\
                  {}\
                  \r\n",
             self.status as usize,

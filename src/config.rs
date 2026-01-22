@@ -1,14 +1,14 @@
+use serde::Deserialize;
 use std::net::{IpAddr, Ipv4Addr};
-use std::time::Duration;
-
 use std::sync::OnceLock;
+use std::time::Duration;
 
 use crate::http::HttpVersion;
 
 static CONFIG: OnceLock<ServerConfig> = OnceLock::new();
 
 #[allow(dead_code)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct ServerConfig {
     pub address: IpAddr,
     pub port: u16,
@@ -19,12 +19,15 @@ pub struct ServerConfig {
     pub max_header_size: usize,
     pub max_body_size: usize,
 
+    #[serde(deserialize_with = "deserialize_duration")]
     pub read_timeout: Duration,
+
+    #[serde(deserialize_with = "deserialize_duration")]
     pub write_timeout: Duration,
 
-    pub static_files_root: &'static str,
+    pub static_files_root: String,
 
-    pub server_name: &'static str,
+    pub server_name: String,
 }
 
 impl Default for ServerConfig {
@@ -42,9 +45,31 @@ impl Default for ServerConfig {
             read_timeout: Duration::from_secs(5),
             write_timeout: Duration::from_secs(5),
 
-            static_files_root: "./static",
+            static_files_root: "./static".to_string(),
 
-            server_name: "RustyNet/0.1",
+            server_name: "rustynet/0.1".to_string(),
+        }
+    }
+}
+
+impl ServerConfig {
+    pub fn from_file(path: &str) -> Self {
+        let content = match std::fs::read_to_string(path) {
+            Ok(content) => content,
+            Err(err) => {
+                eprintln!("Fail to read {}: {err}", path);
+                eprintln!("Fall back to default config");
+                return ServerConfig::default();
+            }
+        };
+
+        match toml::from_str::<ServerConfig>(content.as_str()) {
+            Ok(server_config) => server_config,
+            Err(err) => {
+                eprintln!("Fail to deserialize config file {}: {err}", path);
+                eprintln!("Fall back to default config");
+                ServerConfig::default()
+            }
         }
     }
 }
@@ -55,4 +80,12 @@ pub fn set_config(cfg: ServerConfig) {
 
 pub fn config() -> &'static ServerConfig {
     CONFIG.get().expect("Config not initialized")
+}
+
+fn deserialize_duration<'de, D>(deserializer: D) -> Result<Duration, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let secs = f64::deserialize(deserializer)?;
+    Ok(Duration::from_secs_f64(secs))
 }

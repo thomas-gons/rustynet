@@ -1,3 +1,5 @@
+use serde::Deserialize;
+
 pub mod headers;
 pub mod parser;
 pub mod request;
@@ -8,7 +10,7 @@ pub mod validator;
 const HTTP_METHOD_MAX_LEN: usize = 16;
 
 #[allow(dead_code)]
-#[derive(PartialEq, PartialOrd, Debug, Clone)]
+#[derive(PartialEq, PartialOrd, Debug, Clone, Deserialize)]
 pub enum HttpVersion {
     V0_9,
     V1_0,

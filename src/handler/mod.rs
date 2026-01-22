@@ -1,3 +1,4 @@
+mod middleware;
 mod responses;
 mod router;
 mod static_files;
@@ -7,7 +8,9 @@ use crate::http::response::HttpResponse;
 use crate::http::status::HttpStatus;
 
 pub fn handle_request(req: &HttpRequest) -> HttpResponse {
-    router::route(req)
+    let mut res = router::route(req);
+    middleware::apply(req, &mut res);
+    res
 }
 
 pub fn handle_error(err: HttpStatus) -> HttpResponse {

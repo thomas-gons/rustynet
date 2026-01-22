@@ -10,7 +10,6 @@ pub fn route(req: &HttpRequest) -> HttpResponse {
         (HttpMethod::Get, "/") => responses::welcome(),
 
         (HttpMethod::Get, _) => static_files::serve(&req.path),
-
         _ => responses::any_error(HttpStatus::MethodNotAllowed),
     }
 }

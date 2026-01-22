@@ -166,6 +166,7 @@ impl Parser {
                     req.set_header(RequestHeader::ContentLength, value);
                 }
                 "content-type" => req.set_header(RequestHeader::ContentType, value),
+                "accept-encoding" => req.headers.set_raw("Accept-Encoding", value),
                 _ => {}
             }
         }
