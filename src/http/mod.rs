@@ -32,7 +32,7 @@ impl HttpVersion {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum HttpMethod {
     Get,
     Head,
