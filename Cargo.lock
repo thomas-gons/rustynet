@@ -490,6 +490,7 @@ dependencies = [
  "flate2",
  "httpdate",
  "indexmap",
+ "once_cell",
  "serde",
  "toml",
 ]

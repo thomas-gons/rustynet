@@ -16,7 +16,7 @@ pub struct ServerConfig {
 
     pub http_version: HttpVersion,
     pub max_request_line_size: usize,
-    pub max_path_size: usize,
+    pub max_uri_size: usize,
     pub max_header_size: usize,
     pub max_body_size: usize,
 
@@ -40,7 +40,7 @@ impl Default for ServerConfig {
 
             http_version: HttpVersion::V1_1,
             max_request_line_size: 8 + 2 + 1024 + 1 + 8, // METHOD + ' ' + PATH + ' ' + HTTP/VERSION
-            max_path_size: 1024,
+            max_uri_size: 1024,
             max_header_size: 8192,
             max_body_size: 1024 * 1024, // 1 MB
 

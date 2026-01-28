@@ -10,7 +10,7 @@ pub enum RequestHeader {
 
 pub struct HttpRequest {
     pub method: HttpMethod,
-    pub path: String,
+    pub uri: String,
     pub http_version: (u8, u8),
 
     // headers
@@ -22,7 +22,7 @@ impl HttpRequest {
     pub fn new() -> Self {
         Self {
             method: HttpMethod::Unknown,
-            path: String::new(),
+            uri: String::new(),
             http_version: (0, 0),
             headers: HttpHeaders::new(),
             body: Vec::new(),
