@@ -42,6 +42,7 @@ enum ParserState {
     Done,
 }
 
+/// The HTTP request parser.
 pub struct Parser {
     buf: [u8; PARSER_BUF_CAP],
     buf_len: usize,
@@ -51,6 +52,7 @@ pub struct Parser {
     headers_bytes_parsed: usize,
 }
 
+/// Informative parsing outcomes.
 #[derive(PartialEq, Debug)]
 pub enum ParserOk {
     /// Parsing completed successfully for the current stage.
@@ -66,7 +68,7 @@ pub enum ParserOk {
     Done,
 }
 
-// Syntaxic parsing errors
+/// Syntaxic parsing errors. 
 #[derive(PartialEq, Debug)]
 pub enum ParserError {
     Error,
@@ -94,10 +96,14 @@ impl Parser {
         }
     }
 
+    // After headers are parsed, the parser stop feeding new data until the server
+    // validates the request and resumes parsing.
+    // Once resumed, the internal buffer should be completely consumed before reading more data.
     pub fn is_buffer_empty(&self) -> bool {
         self.buf_len == 0
     }
 
+    /// helper to find a byte pattern in the internal buffer like crlf delimiters
     fn find_delimiter(&self, pattern: &[u8]) -> Option<usize> {
         self.buf[..self.buf_len]
             .windows(pattern.len())
@@ -167,13 +173,14 @@ impl Parser {
         Ok(ParserOk::Ok)
     }
 
+    /// Validate header name according to RFC 7230 :
+    /// <https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.6>
     fn get_header_name(name: &[u8]) -> Result<&str, ParserError> {
         let s = std::str::from_utf8(name).map_err(|_| ParserError::Error)?;
         if s.is_empty() {
             return Err(ParserError::Error);
         }
 
-        // Only allow tchar characters (ASCII letters, digits, and these symbols)
         if !s.bytes().all(|b| {
             b.is_ascii_alphanumeric()
             || b"!#$%&'*+-.^_`|~".contains(&b)
@@ -184,6 +191,8 @@ impl Parser {
         Ok(s)
     }
 
+    /// Validate header value according to RFC 7230 :
+    /// <https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.6>
     fn get_header_value(value: &[u8]) -> Result<&str, ParserError> {
         let s = std::str::from_utf8(value).map_err(|_| ParserError::Error)?;
 
