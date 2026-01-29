@@ -1,6 +1,10 @@
 use crate::http::HttpMethod;
 use crate::http::headers::HttpHeaders;
 
+/// Common HTTP request headers
+/// This enum defines the set of headers that can be explicitly set on an
+/// [`HttpRequest`] through its safe wrapper API.
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RequestHeader {
     Host,
@@ -29,6 +33,13 @@ impl HttpRequest {
         }
     }
 
+    /// Sets a request header constrained to the allowed [`RequestHeader`] variants.
+    ///
+    /// This method acts as a safe wrapper around [`HttpHeaders::set_raw`],
+    /// ensuring that only headers explicitly supported by [`RequestHeader`]
+    /// can be added through this API.
+    ///
+    /// No validation is performed on the header value itself.
     pub fn set_header(&mut self, h: RequestHeader, value: &str) {
         let name = match h {
             RequestHeader::ContentLength => "Content-Length",

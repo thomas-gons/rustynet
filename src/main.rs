@@ -9,21 +9,33 @@ use async_std::task;
 use config::{ServerConfig, config, set_config};
 use net::server::Server;
 
+
+const BLUE: &str = "\x1b[34;1m";
+const GREEN: &str = "\x1b[32;1m";
+const WHITE: &str = "\x1b[39;1m";
+const RESET: &str = "\x1b[0m";
+
+// Server startup message:
+//
+// <server_name> ready in <time> ms
+// ➜  Local:      http://<address>:<port>
+// ➜  File root:  <static_files_root>
 fn ready_msg(time: Duration) {
     let cfg = config();
+
     println!();
     println!(
-        "\x1b[32;1m{}\x1b[0m ready in \x1b[39;1m{}\x1b[0m ms",
+        "{GREEN}{}{RESET} ready in {WHITE}{}{RESET} ms",
         cfg.server_name,
         time.as_millis()
     );
     println!(
-        "\x1b[32;1m➜\x1b[0m  \x1b[39;1mLocal\x1b[0m:      \x1b[34;1mhttp://{}:{}\x1b[0m",
-        cfg.address, cfg.port
+        "{GREEN}➜{RESET}  {WHITE}Local{RESET}:      {BLUE}http://{}:{}{RESET}",
+        cfg.address,
+        cfg.port
     );
-
     println!(
-        "\x1b[32;1m➜\x1b[0m  \x1b[39;1mFile root\x1b[0m:  \x1b[39;1m{}\x1b[0m",
+        "{GREEN}➜{RESET}  {WHITE}File root{RESET}:  {WHITE}{}{RESET}",
         cfg.static_files_root
     );
 }

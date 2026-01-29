@@ -68,7 +68,7 @@ pub enum ParserOk {
     Done,
 }
 
-/// Syntaxic parsing errors. 
+/// Syntaxic parsing errors.
 #[derive(PartialEq, Debug)]
 pub enum ParserError {
     Error,
@@ -181,10 +181,10 @@ impl Parser {
             return Err(ParserError::Error);
         }
 
-        if !s.bytes().all(|b| {
-            b.is_ascii_alphanumeric()
-            || b"!#$%&'*+-.^_`|~".contains(&b)
-        }) {
+        if !s
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b"!#$%&'*+-.^_`|~".contains(&b))
+        {
             return Err(ParserError::Error);
         }
 
@@ -246,13 +246,10 @@ impl Parser {
             let name = Self::get_header_name(name)?;
             let value = Self::get_header_value(value)?;
 
+            // no validation on value is performed here - it is left to the validator
             match name.to_lowercase().as_str() {
                 "host" => req.set_header(RequestHeader::Host, value),
-                "content-length" => {
-                    value.parse::<usize>().map_err(|_| ParserError::Error)?;
-
-                    req.set_header(RequestHeader::ContentLength, value);
-                }
+                "content-length" => req.set_header(RequestHeader::ContentLength, value),
                 "content-type" => req.set_header(RequestHeader::ContentType, value),
                 "accept-encoding" => req.headers.set_raw("Accept-Encoding", value),
                 _ => {}

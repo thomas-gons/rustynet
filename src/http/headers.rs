@@ -1,3 +1,21 @@
+//! HTTP headers abstraction for [`HttpRequest`](crate::http::request::HttpRequest) and
+//! [`HttpResponse`](crate::http::response::HttpResponse)
+//!
+//! This module provides a low-level abstraction for handling HTTP headers in
+//! requests and responses. It supports setting, retrieving, and serializing headers.
+//!
+//! Headers are stored in an ordered map to preserve insertion order.
+//! Both header names and values are stored as raw strings, without validation
+//! or restrictions on which headers are allowed.
+//!
+//! This abstraction does not enforce any HTTP semantics or constraints.
+//! Higher-level types such as [`HttpRequest`](crate::http::request::HttpRequest)
+//! and [`HttpResponse`](crate::http::response::HttpResponse) are responsible for
+//! applying their own rules by wrapping or constraining access to this structure.
+//!
+//! When required, header values can be validated by the
+//! [`validator`](crate::http::validator) module.
+
 use indexmap::IndexMap;
 
 pub struct HttpHeaders {

@@ -1,8 +1,11 @@
+//! Defines common HTTP status codes used in responses.
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HttpStatus {
     Ok = 200,
 
     BadRequest = 400,
+    Forbidden = 403,
     NotFound = 404,
     MethodNotAllowed = 405,
     LengthRequired = 411,

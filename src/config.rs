@@ -1,3 +1,11 @@
+//! Configuration module for the HTTP server.
+//! 
+//! This module exposes the `ServerConfig` using a global singleton pattern
+//! to allow easy access throughout the server code with [`config()`].
+//! 
+//! The configuration can be loaded from a TOML file using [`ServerConfig::from_file()`].
+//! If loading fails, a default configuration is used.
+
 use serde::Deserialize;
 use std::net::{IpAddr, Ipv4Addr};
 use std::sync::OnceLock;
@@ -7,6 +15,12 @@ use crate::http::HttpVersion;
 
 static CONFIG: OnceLock<ServerConfig> = OnceLock::new();
 
+/// Server configuration structure
+/// This struct holds all configurable parameters for the HTTP server.
+/// It can be deserialized from a TOML file or created with default values.
+///
+/// As [`Duration`] does not implement `Deserialize` by default,
+/// a custom deserializer is provided for the timeout fields.
 #[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize)]
 pub struct ServerConfig {
@@ -39,8 +53,8 @@ impl Default for ServerConfig {
             buffer_size: 4096,
 
             http_version: HttpVersion::V1_1,
-            max_request_line_size: 8 + 2 + 1024 + 1 + 8, // METHOD + ' ' + PATH + ' ' + HTTP/VERSION
             max_uri_size: 1024,
+            max_request_line_size: 8 + 2 + 1024 + 1 + 8, // METHOD + ' ' + URI + ' ' + HTTP/VERSION
             max_header_size: 8192,
             max_body_size: 1024 * 1024, // 1 MB
 
@@ -55,6 +69,9 @@ impl Default for ServerConfig {
 }
 
 impl ServerConfig {
+
+    /// Loads the server configuration from a TOML file at the given path.
+    /// If reading or deserialization fails, the default configuration is returned.
     pub fn from_file(path: &str) -> Self {
         let content = match std::fs::read_to_string(path) {
             Ok(content) => content,
@@ -84,6 +101,7 @@ pub fn config() -> &'static ServerConfig {
     CONFIG.get().expect("Config not initialized")
 }
 
+/// Custom deserializer for `Duration` from floating point seconds
 fn deserialize_duration<'de, D>(deserializer: D) -> Result<Duration, D::Error>
 where
     D: serde::Deserializer<'de>,

@@ -7,6 +7,10 @@ pub mod response;
 pub mod status;
 pub mod validator;
 
+
+/// All existing HTTP versions
+/// Use to validate HTTP version from request in [`validator`]
+/// The max supported version is given in the server config (see [`http_version`](crate::config::ServerConfig::http_version))
 #[allow(dead_code)]
 #[derive(PartialEq, PartialOrd, Debug, Clone, Deserialize)]
 pub enum HttpVersion {
@@ -18,6 +22,7 @@ pub enum HttpVersion {
 }
 
 impl HttpVersion {
+    /// Check if a tuple (major, minor) corresponds to a valid HTTP version
     pub fn is_valid(v: (u8, u8)) -> Result<HttpVersion, ()> {
         match (v.0, v.1) {
             (0, 9) => Ok(HttpVersion::V0_9),

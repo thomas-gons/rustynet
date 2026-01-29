@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::Read;
+use std::io::ErrorKind::*;
 
 use crate::config::config;
 use crate::handler::responses;
@@ -15,8 +16,10 @@ pub fn serve(path: &str) -> HttpResponse {
 
     let mut file = match File::open(&full_path) {
         Ok(f) => f,
-        Err(_) => {
-            return responses::not_found();
+        Err(err) => match err.kind() {
+            NotFound => return responses::not_found(),
+            PermissionDenied => return responses::forbidden(),
+            _ => return responses::internal_server_error(), 
         }
     };
 

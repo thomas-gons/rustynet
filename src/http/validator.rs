@@ -1,3 +1,15 @@
+//! HTTP request validator
+//! Once all headers have been parsed from an incoming request,
+//! this module provides functionality to validate its semantics
+//! according to HTTP rules and server configuration.
+//! The semantics errors are directly mapped to appropriate HTTP status codes
+//! 
+//! This includes validating:
+//! - HTTP version support
+//! - HTTP method constraints (e.g., body presence for POST/PUT)
+//! - Content-Length header correctness
+//! - Maximum allowed body size
+
 use crate::config::config;
 use crate::http::HttpMethod;
 use crate::http::HttpVersion;
@@ -15,6 +27,8 @@ pub enum ValidatorError {
 }
 
 impl ValidatorError {
+
+    /// Maps a `ValidatorError` to the corresponding `HttpStatus` code.
     pub fn into_http_status(self) -> HttpStatus {
         match self {
             ValidatorError::Error => HttpStatus::BadRequest,
@@ -31,6 +45,8 @@ impl ValidatorError {
 pub struct Validator;
 
 impl Validator {
+
+    /// Validates that the HTTP version is supported by the server configuration. (see [`http_version`](crate::config::ServerConfig::http_version))
     fn validate_http_version(v: (u8, u8)) -> Result<(), ValidatorError> {
         match HttpVersion::is_valid(v) {
             Ok(http_v) => {
@@ -44,6 +60,9 @@ impl Validator {
         }
     }
 
+    /// Applies method-specific validation rules.
+    /// GET/HEAD must not have a body whereas POST/PUT must have one.
+    /// Other methods are not constrained.
     fn validate_http_method(
         content_length: Option<usize>,
         method: &HttpMethod,
@@ -63,6 +82,7 @@ impl Validator {
         }
     }
 
+    /// public interface to enforce all validations on an `HttpRequest`
     pub fn validate_request(req: &HttpRequest) -> Result<(), ValidatorError> {
         Self::validate_http_version(req.http_version)?;
 
